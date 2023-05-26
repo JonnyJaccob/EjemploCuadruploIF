@@ -552,7 +552,7 @@ namespace EjemploCuadruplosYCiclo
 						}
 						
 						
-						if (EsIgual(modo, "ENTE", "REAE") && !EsIgual(var,"PR04","PR18","ENTE","ENTF","REAE","REAF","POSTE","POSTF"))
+						if (EsIgual(modo, "ENTE", "REAE","ASIG") && !EsIgual(var,"PR04","PR18","ENTE","ENTF","REAE","REAF","POSTE","POSTF"))
 						{
 							if(EsIgual(var,"OPSM","OPRS","OPML","OPDV","OPEX","ASIG"))
 							{
@@ -578,45 +578,16 @@ namespace EjemploCuadruplosYCiclo
 								}
 								else
 								{
+									//if(ContarElementosEntre(matriz[i],"POSTE","POSTF") >0){ }
+									
 									string temporal = AsignarNumero(ID++);
-									if (j == matriz[i].Length - 2)
-									{
-										string primerElem;
-										if (aux1.Count == 1)
-										{
-											primerElem = aux1.Pop();
-											dtgTabla.Rows.Add(Indice++, primerElem, x, y, var);
-										}
-										else
-										{
-											dtgTabla.Rows.Add(Indice++, x, x, y, var);
-										}
-									}
-									else
-									{
-										dtgTabla.Rows.Add(Indice++, temporal, x, y, var);
-										aux1.Push(temporal);
-									}
+									dtgTabla.Rows.Add(Indice++, temporal, x, y, var);
+									aux1.Push(temporal);
 								}
 							}else
 							{
 								aux1.Push(var);
 							}
-							
-						}
-						if (EsIgual(modo, "ASIG") && !EsIgual(var, "PR04", "PR18", "ASIGE", "ASIGF", "POSTE", "POSTF"))
-						{
-							if (EsIgual(var, "OPSM", "OPRS", "OPML", "OPDV", "OPEX", "ASIG") )
-							{
-								x = aux1.Pop();
-								y = aux1.Pop();
-								dtgTabla.Rows.Add(Indice++, x, y, "", var);
-							}
-							else
-							{
-								aux1.Push(var);
-							}
-							
 						}
 					}
 					//SE y Ali
@@ -685,6 +656,21 @@ namespace EjemploCuadruplosYCiclo
 			}
 			return false;
 		}
+		static int ContarElementosEntre(string[] arreglo, string inicio, string fin)
+		{
+			string arregloString = string.Join(" ", arreglo);
+			string[] arregloRecortado = arregloString.Split(new[] { inicio, fin }, StringSplitOptions.RemoveEmptyEntries);
+			string resultado = arregloRecortado.Length > 1 ? arregloRecortado[1].Trim() : string.Empty;
+
+			if (!string.IsNullOrEmpty(resultado))
+			{
+				string[] elementos = resultado.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+				return elementos.Length;
+			}
+
+			return 0;
+		}
+
 		private string ConversionPosfija(string[] token)
 		{
 			string[] lista = token;
