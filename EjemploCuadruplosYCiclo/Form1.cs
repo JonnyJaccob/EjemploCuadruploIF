@@ -22,9 +22,11 @@ namespace EjemploCuadruplosYCiclo
 			if(!String.IsNullOrWhiteSpace(rchCodigoEjemplo.Text))
 			{
 				rchCodigoCargado.Text = "";
-				matrizTokens = Reconocimiento(rchCodigoEjemplo.Text);
-				matrizTokens = FormatoPosfijo(matrizTokens);
+				matrizTokens = Reconocimiento(rchCodigoEjemplo.Text);//Acondicionamiento
+				matrizTokens = FormatoPosfijo(matrizTokens);//Conversion Posfija
 				rchCodigoCargado.Text = ConvertirArregloACadena(matrizTokens);
+				//Conversion a cuadruplos
+				Cuadruplos(matrizTokens, dtgViewCuadruplo);
 			}
 		}
 		private string[][] Reconocimiento(string texto)
@@ -238,18 +240,7 @@ namespace EjemploCuadruplosYCiclo
 
 			return false;
 		}
-
-		private bool EsIgualSigno(params string[] coleccion)
-		{
-			foreach (string signo in coleccion)
-			{
-				if (signo == '^' + "" || signo == '/' + "" || signo == '*' + "" || signo == '-' + "" || signo == '+' + "" || signo == '=' + "")
-				{
-					return true;
-				}
-			}
-			return false;
-		}
+		
 		static string[] ReemplazarElementos(string[] arreglo, string primerString, string segundoString)
 		{
 			if (arreglo.Length < 2)
@@ -533,7 +524,152 @@ namespace EjemploCuadruplosYCiclo
 				}
 			}
 		}
+		private void Cuadruplos( string[][] matriz, DataGridView dtgTabla)
+		{
+			string[][] temporal1 = matriz
+				.Select(innerArray => innerArray.Where(elemento => !string.IsNullOrEmpty(elemento)).ToArray())
+				.Where(innerArray => innerArray.Length > 0)
+				.ToArray();
+			matriz = temporal1;
+			Stack<string> aux1 = new Stack<string>();
+			Stack<string> aux2 = new Stack<string>();
+			Stack<string> _ModoRecorrido = new Stack<string>();
+			int ID = 1;
+			int Indice = 1;
+			for (int i = 0; i < matriz.Length; i++)
+			{
+				for (int j = 0; j < matriz[i].Length; j++)
+				{
+					string y, x;
+					string var = matriz[i][j];
+					if(_ModoRecorrido.Count >0)
+					{
+						string modo = _ModoRecorrido.Peek();
+						
+						if (EsIgual(modo, "SEE"))
+						{
 
+						}
+						
+						
+						if (EsIgual(modo, "ENTE", "REAE") && !EsIgual(var,"PR04","PR18","ENTE","ENTF","REAE","REAF","POSTE","POSTF"))
+						{
+							if(EsIgual(var,"OPSM","OPRS","OPML","OPDV","OPEX","ASIG"))
+							{
+								if (aux1.Count >= 3)
+								{
+									string x1 = aux1.Pop();
+									string y1 = aux1.Pop();
+									aux2.Push(x1);
+									y = aux2.Pop();
+									aux2.Push(y1);
+									x = aux2.Pop();
+								}
+								else
+								{
+									y = aux1.Pop();
+									x = aux1.Pop();
+								}
+								
+								if(var == "ASIG")
+								{
+									dtgTabla.Rows.Add(Indice++, x, y, "", var);
+									aux1.Push(x);
+								}
+								else
+								{
+									string temporal = AsignarNumero(ID++);
+									if (j == matriz[i].Length - 2)
+									{
+										string primerElem;
+										if (aux1.Count == 1)
+										{
+											primerElem = aux1.Pop();
+											dtgTabla.Rows.Add(Indice++, primerElem, x, y, var);
+										}
+										else
+										{
+											dtgTabla.Rows.Add(Indice++, x, x, y, var);
+										}
+									}
+									else
+									{
+										dtgTabla.Rows.Add(Indice++, temporal, x, y, var);
+										aux1.Push(temporal);
+									}
+								}
+							}else
+							{
+								aux1.Push(var);
+							}
+							
+						}
+						if (EsIgual(modo, "ASIG") && !EsIgual(var, "PR04", "PR18", "ASIGE", "ASIGF", "POSTE", "POSTF"))
+						{
+							if (EsIgual(var, "OPSM", "OPRS", "OPML", "OPDV", "OPEX", "ASIG") )
+							{
+								x = aux1.Pop();
+								y = aux1.Pop();
+								dtgTabla.Rows.Add(Indice++, x, y, "", var);
+							}
+							else
+							{
+								aux1.Push(var);
+							}
+							
+						}
+					}
+					//SE y Ali
+					if (var == "PR21")
+					{
+						_ModoRecorrido.Push("SEE");
+					}
+					if (var == "SEF")
+					{
+						_ModoRecorrido.Pop();
+					}
+					//ENT
+					if (var == "ENTE")
+					{
+						_ModoRecorrido.Push("ENTE");
+					}
+					if (var == "ENTF")
+					{
+						_ModoRecorrido.Pop();
+					}
+					//REA
+					if (var == "REAE")
+					{
+						_ModoRecorrido.Push("REAE");
+					}
+					if (var == "REAF")
+					{
+						_ModoRecorrido.Pop();
+					}
+					//ASIG
+					if (var == "ASIGE")
+					{
+						_ModoRecorrido.Push("ASIG");
+					}
+					if (var == "ASIGF")
+					{
+						_ModoRecorrido.Pop();
+					}
+				}
+			}
+			
+			string AsignarNumero(int numero)
+			{
+				if (numero.ToString().Length == 1)
+				{
+					return "TE0" + numero;
+				}
+				else
+				{
+					return "TE" + numero;
+				}
+			}
+		}
 		private void btnSalir_Click(object sender, EventArgs e)
 		{
 			Application.Exit();
